@@ -1,0 +1,9 @@
+{
+  "id": "rental-property-importer",
+  "name": "Rental Property Importer",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "Imports rental property data from web extractors into Obsidian notes.",
+  "author": "Benjamin Lakis",
+  "isDesktopOnly": true
+}
