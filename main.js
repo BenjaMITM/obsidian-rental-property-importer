@@ -36,34 +36,6 @@ class RentalPropertyImporter extends obsidian_1.Plugin {
             }
             const safeTitle = data.address.replace(/[\\/:*?"<>|]/g, '-').trim() || `Unknown Property ${Date.now()}`;
             const fileName = (0, obsidian_1.normalizePath)(`${folderPath}/${safeTitle}.md`);
-            const frontmatter = [
-                '---',
-                `address: "${data.address}"`,
-                `city: "${data.city}"`,
-                `state: "${data.state}"`,
-                `zip: ${data.zip}"`,
-                `neighborhood: "${data.neighborhood}"`,
-                `rental_price: "${data.rentalPrice}"`,
-                `rental_type: "${data.rentalType}"`,
-                `floor_plan: "${data.floorPlan}"`,
-                `sqft: "${data.sqft}"`,
-                `bedrooms: "${data.bedrooms}"`,
-                `bathrooms: "${data.bathrooms}"`,
-                'amenities:',
-                ...data.amenities.map(a => ` - "${a}"`),
-                `pets: "${data.pets}"`,
-                `in_unit_laundry: ${data.inUnitLaundry}`,
-                `ac: ${data.hasAC}`,
-                `dishwasher: ${data.hasDishwasher}`,
-                `availability_date: "${data.availabilityDate}"`,
-                `rating: "${data.rating}"`,
-                `property_management: "${data.propertyManagement}"`,
-                `contact_email: "${data.contactEmail}"`,
-                `contact_phone: "${data.contactPhone}"`,
-                `prerequisites: "${data.prerequisites}"`,
-                `link: "${data.link}"`,
-                '---'
-            ].join('\n');
             let body = `\n# [[${data.address}]]\n\n`;
             if (data.propertyManagement.toLowerCase().includes('owner')) {
                 body += `> [!warning] For Sale / Rent By Owner\n\n`;
@@ -72,14 +44,40 @@ class RentalPropertyImporter extends obsidian_1.Plugin {
             data.photos.forEach(photo => {
                 body += `![](${photo})\n`;
             });
-            const fileContent = `{$frontmatter}\n${body}`;
-            const file = this.app.vault.getAbstractFileByPath(fileName);
-            if (file instanceof obsidian_1.TFile) {
-                yield this.app.vault.modify(file, fileContent);
+            const existingFile = this.app.vault.getAbstractFileByPath(fileName);
+            let file;
+            if (existingFile instanceof obsidian_1.TFile) {
+                file = existingFile;
+                yield this.app.vault.modify(file, body);
             }
             else {
-                yield this.app.vault.create(fileName, fileContent);
+                file = yield this.app.vault.create(fileName, body);
             }
+            yield this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+                frontmatter['address'] = data.address;
+                frontmatter['city'] = data.city;
+                frontmatter['state'] = data.state;
+                frontmatter['zip'] = data.zip;
+                frontmatter['neighborhood'] = data.neighborhood;
+                frontmatter['rental_price'] = data.rentalPrice;
+                frontmatter['rental_type'] = data.rentalType;
+                frontmatter['floor_plan'] = data.floorPlan;
+                frontmatter['sqft'] = data.sqft;
+                frontmatter['bedrooms'] = data.bedrooms;
+                frontmatter['bathrooms'] = data.bathrooms;
+                frontmatter['amenities'] = data.amenities;
+                frontmatter['pets'] = data.pets;
+                frontmatter['in_unit_laundry'] = data.inUnitLaundry;
+                frontmatter['ac'] = data.hasAC;
+                frontmatter['dishwasher'] = data.hasDishwasher;
+                frontmatter['availability_date'] = data.availabilityDate;
+                frontmatter['rating'] = data.rating;
+                frontmatter['property_management'] = data.propertyManagement;
+                frontmatter['contact_email'] = data.contactEmail;
+                frontmatter['contact_phone'] = data.contactPhone;
+                frontmatter['prerequisites'] = data.prerequisites;
+                frontmatter['link'] = data.link;
+            });
         });
     }
 }
